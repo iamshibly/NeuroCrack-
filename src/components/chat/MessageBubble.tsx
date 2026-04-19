@@ -1,8 +1,14 @@
 import { Sparkles, User } from "lucide-react";
 import type { Message } from "@/lib/chat-store";
+import { AnswerRenderer } from "@/components/chat/AnswerRenderer";
 import { cn } from "@/lib/utils";
 
-export function MessageBubble({ message }: { message: Message }) {
+type Props = {
+  message: Message;
+  onOptionSelect?: (option: string) => void;
+};
+
+export function MessageBubble({ message, onOptionSelect }: Props) {
   const isUser = message.role === "user";
   return (
     <div className={cn("flex gap-3 md:gap-4", isUser && "flex-row-reverse")}>
@@ -17,14 +23,25 @@ export function MessageBubble({ message }: { message: Message }) {
       </div>
       <div
         className={cn(
-          "max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap",
+          "max-w-[85%] md:max-w-[75%] rounded-2xl px-4 py-3 text-sm leading-relaxed",
           isUser
             ? "bg-primary text-primary-foreground rounded-tr-sm"
             : "bg-card border border-border text-card-foreground rounded-tl-sm",
         )}
         style={isUser ? undefined : { boxShadow: "var(--shadow-soft)" }}
       >
-        {message.content}
+        {isUser && message.imageDataUrl && (
+          <img
+            src={message.imageDataUrl}
+            alt="Attached"
+            className="max-h-48 max-w-full rounded-xl mb-2 block"
+          />
+        )}
+        {!isUser && message.structured ? (
+          <AnswerRenderer answer={message.structured} onOptionSelect={onOptionSelect} />
+        ) : (
+          message.content && <span className="whitespace-pre-wrap">{message.content}</span>
+        )}
       </div>
     </div>
   );

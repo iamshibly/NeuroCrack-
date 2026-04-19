@@ -1,0 +1,331 @@
+I need you to make a focused frontend change to this React/TanStack chat app.
+
+IMPORTANT:
+- This is a frontend-only MVP.
+- Use the existing project structure and existing UI style.
+- Keep TypeScript strict and do not break the current app.
+- Do NOT edit auto-generated files like src/routeTree.gen.ts.
+- Reuse existing shadcn/ui / project UI patterns if available.
+- Keep styling consistent with the current soft clean NeuroCrack design.
+
+==================================================
+GOAL
+==================================================
+
+I want to change the /chat page UX.
+
+Right now the page has:
+- a main chat area
+- an input with placeholder "Ask your doubt..."
+- 4 suggestion cards like:
+  - Solve a math problem
+  - Explain a science concept
+  - Help with English
+  - Admission test doubt
+
+I do NOT want those 4 suggestion cards anymore.
+
+Instead, before a student can ask a doubt, the student must first choose:
+
+1. Class
+2. Subject
+
+Rules:
+- Class is required
+- Subject is required
+- Only one class can be selected
+- Only one subject can be selected
+- Subject options must depend on the selected class
+- The student can ask a query only after both class and subject are selected
+- The selected class and subject must become part of the query context
+- This should persist for that chat so if the chat is reopened, the class/subject are still known
+- When a new chat is created, class and subject should reset
+
+==================================================
+FILES TO INSPECT FIRST
+==================================================
+
+Please inspect these files first and then edit them as needed:
+
+1. src/routes/chat.tsx
+   - likely the main chat page / empty state / suggestion cards / chat layout
+
+2. src/components/chat/MessageInput.tsx
+   - likely where the input box and send behavior live
+
+3. src/lib/chat-store.ts
+   - likely where chat persistence/localStorage structures live
+
+4. src/components/chat/Sidebar.tsx
+   - inspect only if needed for recent chat metadata or new chat reset behavior
+
+5. src/styles.css
+   - only if a small styling adjustment is needed using existing design tokens
+
+Create these new files if needed:
+
+6. src/components/chat/ClassSubjectSelector.tsx
+   - reusable selector UI for class + subject
+
+7. src/lib/classSubjectOptions.ts
+   - keep all class/subject data in one clean constants file
+
+Do NOT edit:
+- src/routeTree.gen.ts
+
+If any of the file names differ slightly in this project, find the equivalent file and work there.
+
+==================================================
+REQUIRED DATA
+==================================================
+
+Use this exact class/subject mapping:
+
+Class 6
+- Bangla
+- English
+- Mathematics
+- Science
+- Bangladesh and Global Studies
+- ICT
+- Physical Education and Health
+- Work and Life Oriented Education
+
+Class 7
+- Bangla
+- English
+- Mathematics
+- Science
+- Bangladesh and Global Studies
+- ICT
+- Physical Education and Health
+- Work and Life Oriented Education
+
+Class 8
+- Bangla
+- English
+- Mathematics
+- Science
+- Bangladesh and Global Studies
+- ICT
+- Physical Education and Health
+- Work and Life Oriented Education
+
+SSC (Science)
+- Bangla
+- English
+- Mathematics
+- Bangladesh and Global Studies
+- ICT
+- Physics
+- Chemistry
+- Biology
+- Higher Mathematics
+
+SSC (Commerce / Business Studies)
+- Bangla
+- English
+- Mathematics
+- Bangladesh and Global Studies
+- ICT
+- Accounting
+- Finance and Banking
+- Business Entrepreneurship
+
+SSC (Arts / Humanities)
+- Bangla
+- English
+- Mathematics
+- Bangladesh and Global Studies
+- ICT
+- History
+- Civics
+- Economics / Geography
+
+HSC (Science)
+- Bangla
+- English
+- ICT
+- Physics
+- Chemistry
+- Biology
+- Higher Mathematics
+
+HSC (Commerce / Business Studies)
+- Bangla
+- English
+- ICT
+- Accounting
+- Business Organization and Management
+- Finance, Banking and Insurance
+- Production Management and Marketing
+
+HSC (Arts / Humanities)
+- Bangla
+- English
+- ICT
+- History
+- Civics
+- Economics
+- Sociology / Logic / Geography
+
+==================================================
+UX REQUIREMENTS
+==================================================
+
+On the chat page:
+
+1. Remove the 4 suggestion cards completely from the empty state.
+
+2. Add a class selector and subject selector near the input area.
+   Preferred behavior:
+   - class selector first
+   - subject selector second
+   - subject selector disabled until class is selected
+
+3. The main input should not send unless:
+   - class is selected
+   - subject is selected
+   - message text is non-empty
+
+4. Show the selected class and subject clearly in the UI.
+   Good options:
+   - compact chips above the input
+   - or inline labels beside the selectors
+   - keep it clean and premium, not crowded
+
+5. Update the input placeholder dynamically:
+   - if class is not selected: "Select your class first"
+   - if class is selected but subject is not: "Select your subject"
+   - if both are selected: "Ask your doubt..."
+
+6. When the student sends a message, class and subject must be attached to the query context.
+   For now, because this is frontend-only, do this in the outgoing mock prompt structure.
+
+   Example internal message context:
+   Class: SSC (Science)
+   Subject: Physics
+   Question: Explain Newton's 2nd law
+
+7. Do NOT necessarily show this raw prefix inside the visible user bubble unless the existing UX already does that.
+   Better approach:
+   - keep visible message text clean
+   - but store class/subject in chat/message metadata
+   - and use it when generating the mock assistant reply
+
+8. When a user opens a previous chat, restore the selected class and subject for that chat.
+
+9. When "New chat" is clicked:
+   - create a fresh chat
+   - clear class selection
+   - clear subject selection
+   - clear input
+
+==================================================
+STATE / DATA MODEL REQUIREMENTS
+==================================================
+
+Update the local storage backed mock chat state so each chat can remember:
+
+- selectedClass
+- selectedSubject
+
+If the current store structure is message-based, extend it carefully.
+If there is already a chat model, add these fields there.
+
+Suggested shape example:
+- chat.id
+- chat.title
+- chat.messages
+- chat.selectedClass
+- chat.selectedSubject
+- chat.createdAt
+- chat.updatedAt
+
+If a better existing structure already exists, adapt to it instead of forcing a rewrite.
+
+==================================================
+IMPLEMENTATION DETAILS
+==================================================
+
+Please do the following:
+
+A. Create a clean constants file for the class/subject options
+   Example:
+   src/lib/classSubjectOptions.ts
+
+B. Create a reusable selector component
+   Example:
+   src/components/chat/ClassSubjectSelector.tsx
+
+C. Update the chat route/page to:
+   - remove old suggestion cards
+   - render the selector UI
+   - pass selected values to the input/send flow
+   - keep layout responsive
+
+D. Update MessageInput so send is blocked until both selections exist
+
+E. Update chat-store persistence so class/subject are saved per chat
+
+F. Keep the code modular and readable
+   - no giant hardcoded UI logic inside one file if avoidable
+   - keep constants separate from component rendering
+   - use typed interfaces/types
+
+==================================================
+STYLING / DESIGN
+==================================================
+
+Keep the current minimal modern design.
+Do NOT redesign the whole page.
+
+Requirements:
+- preserve existing sidebar and general layout
+- preserve current NeuroCrack look and feel
+- use existing semantic styles/tokens if already defined
+- avoid hardcoded random colors if the project already uses design tokens
+- keep mobile behavior sensible
+
+The class/subject selectors should feel like part of the current app, not like a bolted-on admin form.
+
+==================================================
+ACCEPTANCE CRITERIA
+==================================================
+
+I should be able to:
+
+1. Open /chat
+2. See no old suggestion cards
+3. Select one class
+4. Then select one subject based on that class
+5. Type a question
+6. Send only after class + subject + message are present
+7. Open recent chats and still see the saved class/subject for that chat
+8. Click New chat and start fresh with empty class/subject
+9. Keep the overall UI neat and responsive
+
+==================================================
+IMPORTANT CONSTRAINTS
+==================================================
+
+- Do not touch login/signup/forgot-password unless absolutely necessary
+- Do not edit routeTree.gen.ts
+- Do not introduce backend code
+- Do not introduce unnecessary libraries if existing components are enough
+- Prefer small targeted edits over a big rewrite
+- If there is existing mock assistant reply logic, update it to include class/subject context
+
+==================================================
+OUTPUT I WANT FROM YOU
+==================================================
+
+After making the changes, give me:
+
+1. A short summary of what you changed
+2. The exact files you edited
+3. Any new files you created
+4. Any assumptions you made
+5. Anything I should test manually in the browser
+
+Start by inspecting the listed files, then implement the change.

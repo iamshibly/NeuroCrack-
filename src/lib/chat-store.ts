@@ -1,10 +1,14 @@
 // Lightweight client-side chat store using localStorage.
 // Ready to be swapped for a real backend later.
 
+import type { StructuredAnswer } from "@/lib/chat-types";
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  structured?: StructuredAnswer; // optional rich blocks; plain content is the fallback
+  imageDataUrl?: string;
   createdAt: number;
 };
 
@@ -12,6 +16,9 @@ export type Chat = {
   id: string;
   title: string;
   messages: Message[];
+  selectedClass: string | null;
+  selectedSubject: string | null;
+  selectedChapter: string | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -46,6 +53,9 @@ export const chatStore = {
       id: crypto.randomUUID(),
       title: "New chat",
       messages: [],
+      selectedClass: null,
+      selectedSubject: null,
+      selectedChapter: null,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
@@ -60,10 +70,21 @@ export const chatStore = {
     chats[idx].messages.push(message);
     chats[idx].updatedAt = Date.now();
     if (chats[idx].title === "New chat" && msg.role === "user") {
-      chats[idx].title = msg.content.slice(0, 40);
+      const titleText = msg.content.trim() || (msg.imageDataUrl ? "Image" : "");
+      if (titleText) chats[idx].title = titleText.slice(0, 40);
     }
     write(chats);
     return chats[idx];
+  },
+  updateMeta(chatId: string, meta: { selectedClass?: string | null; selectedSubject?: string | null; selectedChapter?: string | null }) {
+    const chats = read();
+    const idx = chats.findIndex((c) => c.id === chatId);
+    if (idx === -1) return;
+    if (meta.selectedClass !== undefined) chats[idx].selectedClass = meta.selectedClass;
+    if (meta.selectedSubject !== undefined) chats[idx].selectedSubject = meta.selectedSubject;
+    if (meta.selectedChapter !== undefined) chats[idx].selectedChapter = meta.selectedChapter;
+    chats[idx].updatedAt = Date.now();
+    write(chats);
   },
   remove(id: string) {
     write(read().filter((c) => c.id !== id));
